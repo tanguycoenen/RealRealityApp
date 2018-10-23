@@ -35,24 +35,24 @@ export default class RealReality extends Component {
     };
   }
 
-  getGeoLocation() {
+  getGeoLocationPromise() {
+    return new Promise(function(resolve, reject) {
+      console.log("getGeoLocationPromise");
       navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          error: null,
-        });
-        console.log("coordinates have been detected");
-      },
-      (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
-    );
+        (position) => {
+            coords = [position.coords.latitude,position.coords.longitude];
+            resolve(coords);
+          });
+        },
+        (error) => {
+          this.setState({ error: error.message });
+          reject(error.message);
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+      )
   }
 
   getPOIs(){
-    //fetch('https://realreality.be/json/51.1987722/4.4234877')
-    console.log("getting POIs");
     url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
     console.log(url);
     fetch(url)
@@ -65,9 +65,7 @@ export default class RealReality extends Component {
          console.log(this.state.latitude);
          console.log(this.state.longitude);
          console.log(responseJson.pois);
-         url = '2https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
-         console.log(url);
-         //Tts.speak(responseJson.pois[0]['abstract']['value']);
+         Tts.speak(responseJson.pois[0]['abstract']['value']);
        });
      })
      .catch((error) =>{
@@ -76,8 +74,23 @@ export default class RealReality extends Component {
   }
 
   componentDidMount(){
-    this.getGeoLocation();
-    this.getPOIs();
+    this.getGeoLocationPromise().then(
+      result => {
+        this.setState({
+          latitude: coords[0],
+          longitude: coords[1],
+          error: null,
+        });
+        this.getPOIs();
+      },
+      error => {
+        this.setState({
+          error: error,
+        });
+        console.log(error)
+      }
+    )
+
   }
 
 
