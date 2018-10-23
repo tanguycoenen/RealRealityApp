@@ -9,10 +9,14 @@ import {
   ActivityIndicator,
   FlatList
 } from 'react-native';
-//import { Permissions, Notifications } from 'expo';
-//import AWS from 'aws-sdk/dist/aws-sdk-react-native';
-//import { ChattyKathy } from './ChattyKathy';
 import Tts from 'react-native-tts';
+
+// In order to avoid error relate to not finding module react-transform-hmr
+// rm -rf $TMPDIR/react-*; rm -rf $TMPDIR/haste-*; rm -rf $TMPDIR/metro-*; watchman watch-del-all
+// react-native start  --reset-cache
+
+// every minute, when the app is still in the background, poll POI's and check if the nearest POI is closer
+// than distance_treshold. If so, read description out loud
 
 export default class RealReality extends Component {
 
@@ -25,32 +29,13 @@ export default class RealReality extends Component {
       error: null,
       token: null,
       notification: null,
+      poi: null,
       title: 'RealReality',
       body: 'Im feeling so reeeaaaaaal....!',
     };
   }
 
-
-  componentDidMount(){
-     fetch('https://realreality.be/json/51.1987722/4.4234877')
-      .then((response) => response.json())
-      .then((responseJson) => {
-        this.setState({
-          dataSource: responseJson
-        }, function(){
-          console.log("POI's read"); 
-          console.log(responseJson.pois);
-          //console.log(this.state.dataSource[0]);
-          //this.playAbstract("this is a test");
-
-          //Tts.speak(responseJson.pois[0]['abstract']['value']);
-        });
-        //console.log(this.state.dataSource);
-      })
-      .catch((error) =>{
-        console.error(error);
-      });
-
+  getGeoLocation() {
       navigator.geolocation.getCurrentPosition(
       (position) => {
         this.setState({
@@ -58,10 +43,41 @@ export default class RealReality extends Component {
           longitude: position.coords.longitude,
           error: null,
         });
+        console.log("coordinates have been detected");
       },
       (error) => this.setState({ error: error.message }),
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
     );
+  }
+
+  getPOIs(){
+    //fetch('https://realreality.be/json/51.1987722/4.4234877')
+    console.log("getting POIs");
+    url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
+    console.log(url);
+    fetch(url)
+     .then((response) => response.json())
+     .then((responseJson) => {
+       this.setState({
+         dataSource: responseJson
+       }, function(){
+         console.log("POI's read");
+         console.log(this.state.latitude);
+         console.log(this.state.longitude);
+         console.log(responseJson.pois);
+         url = '2https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
+         console.log(url);
+         //Tts.speak(responseJson.pois[0]['abstract']['value']);
+       });
+     })
+     .catch((error) =>{
+       console.error(error);
+     });
+  }
+
+  componentDidMount(){
+    this.getGeoLocation();
+    this.getPOIs();
   }
 
 
