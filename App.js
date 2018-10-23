@@ -71,7 +71,7 @@ export default class RealReality extends Component {
      .catch((error) =>{
        console.error(error);
      });
-  }
+  } 
 
   componentDidMount(){
     this.getGeoLocationPromise().then(
