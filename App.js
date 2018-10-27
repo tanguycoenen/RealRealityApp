@@ -90,7 +90,7 @@ export default class RealReality extends Component {
   }
 
   componentDidMount(){
-    this.getLocationAndPois();
+    //this.getLocationAndPois();
   }
 
   render(){
@@ -102,13 +102,12 @@ export default class RealReality extends Component {
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
                <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
                {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
-               <Button
-                onPress={this.getLocationAndPois.bind(this)}
-                title="Tell me more!"
-                color="#ffffff"
-                backgroundcolor="#d7f442"
-                accessibilityLabel="Speak to me about the closest Point of interest!"
-                />
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.getLocationAndPois.bind(this)}
+                  underlayColor='#fff'>
+                  <Text style={styles.buttonText}>Read me the closest POI</Text>
+                </TouchableOpacity>
          </KeyboardAvoidingView>
 
     );
@@ -146,4 +145,21 @@ const styles = StyleSheet.create({
     padding: 8,
     width: '95%',
   },
+  button:{
+    marginRight:40,
+    marginLeft:40,
+    marginTop:10,
+    paddingTop:10,
+    paddingBottom:10,
+    backgroundColor:'#139622',
+    borderRadius:10,
+    borderWidth: 0,
+    borderColor: '#fff'
+  },
+  buttonText:{
+      color:'#fff',
+      textAlign:'center',
+      paddingLeft : 10,
+      paddingRight : 10
+  }
 });
