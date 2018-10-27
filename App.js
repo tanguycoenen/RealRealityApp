@@ -6,8 +6,7 @@ import {
   Text,
   KeyboardAvoidingView,
   View,
-  ActivityIndicator,
-  FlatList
+  Button
 } from 'react-native';
 import Tts from 'react-native-tts';
 
@@ -23,15 +22,12 @@ export default class RealReality extends Component {
   constructor(props){
     super(props);
     this.state = {
+      dataSource: null,
       isLoading: true,
       latitude: null,
       longitude: null,
       error: null,
-      token: null,
-      notification: null,
       poi: null,
-      title: 'RealReality',
-      body: 'Im feeling so reeeaaaaaal....!',
     };
   }
 
@@ -52,7 +48,7 @@ export default class RealReality extends Component {
       )
   }
 
-  getPOIs(){
+  getPOIs() {
     url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
     console.log(url);
     fetch(url)
@@ -65,6 +61,7 @@ export default class RealReality extends Component {
          console.log(this.state.latitude);
          console.log(this.state.longitude);
          console.log(responseJson.pois);
+         //Speak selected text using native TTS library
          Tts.speak(responseJson.pois[0]['abstract']['value']);
        });
      })
@@ -73,7 +70,7 @@ export default class RealReality extends Component {
      });
   }
 
-  componentDidMount(){
+  getLocationAndPois() {
     this.getGeoLocationPromise().then(
       result => {
         this.setState({
@@ -90,18 +87,13 @@ export default class RealReality extends Component {
         console.log(error)
       }
     )
+  }
 
+  componentDidMount(){
+    this.getLocationAndPois();
   }
 
   render(){
-
-    /*if(this.state.isLoading){
-      return(
-        <View style={{flex: 1, padding: 20}}>
-          <ActivityIndicator/>
-        </View>
-      )
-    }*/
 
     return(
 
@@ -110,18 +102,13 @@ export default class RealReality extends Component {
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
                <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
                {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
-               <View>
-                 <Text style={styles.text}>POIS</Text>
-                 <FlatList
-                  data={this.state.dataSource}
-                  //renderItem={({item}) => <Text>{item.label.value}, {item.subject.value}</Text>}
-                  renderItem={({item}) => (
-                    <Text> test </Text>
-                    //<Text>{item.abstract.value}</Text>
-                    )}
-                  keyExtractor={item => item.subject.value}
-                 />
-               </View>
+               <Button
+                onPress={this.getLocationAndPois.bind(this)}
+                title="Tell me more!"
+                color="#ffffff"
+                backgroundcolor="#d7f442"
+                accessibilityLabel="Speak to me about the closest Point of interest!"
+                />
          </KeyboardAvoidingView>
 
     );
