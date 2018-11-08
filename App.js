@@ -9,6 +9,7 @@ import {
   Button
 } from 'react-native';
 import Tts from 'react-native-tts';
+import BackgroundGeolocation from 'react-native-background-geolocation';
 
 // In order to avoid error relate to not finding module react-transform-hmr
 // rm -rf $TMPDIR/react-*; rm -rf $TMPDIR/haste-*; rm -rf $TMPDIR/metro-*; watchman watch-del-all
@@ -91,12 +92,47 @@ export default class RealReality extends Component {
 
   componentDidMount(){
     //this.getLocationAndPois();
+
+    // This handler fires whenever bgGeo receives a location update.
+    BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);
+    BackgroundGeolocation.ready({
+        // Geolocation Config
+        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+        distanceFilter: 4000,
+        // Activity Recognition
+        stopTimeout: 2,
+        // Application config
+        debug: true, // <-- enable this hear sounds for background-geolocation life-cycle.
+        logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+        stopOnTerminate: true,   // <-- Allow the background-service to continue tracking when user closes the app.
+        startOnBoot: false,        // <-- Auto start tracking when device is powered-up.
+      }, (state) => {
+        console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
+        if (!state.enabled) {
+          BackgroundGeolocation.start(function() {
+            console.log("- Start success");
+          });
+        }
+      });
+  }
+
+  componentWillUnmount() {
+    BackgroundGeolocation.removeListeners();
+  }
+
+  onLocation(location) {
+    console.log('[location] -', location);
+    this.setState({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      error: null,
+    });
+    this.getPOIs();
   }
 
   render(){
 
     return(
-
        <KeyboardAvoidingView style={styles.container} behavior="padding">
                <Text style={styles.title}>RealRealityApp_v0.2</Text>
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
