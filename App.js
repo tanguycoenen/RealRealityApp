@@ -95,17 +95,18 @@ export default class RealReality extends Component {
 
     // This handler fires whenever bgGeo receives a location update.
     BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);
-    BackgroundGeolocation.ready({
-        // Geolocation Config
+    BackgroundGeolocation.onMotionChange(this.onMotionChange);
+    BackgroundGeolocation.setConfig({
+        debug:true,
+        logLevel: BackgroundGeolocation.LOG_LEVEL_ERROR,
         desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-        distanceFilter: 4000,
-        // Activity Recognition
-        stopTimeout: 2,
-        // Application config
-        debug: true, // <-- enable this hear sounds for background-geolocation life-cycle.
-        logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+        distanceFilter: 400,
+        activityRecognitionInterval:10000,
+        stopTimeout: 1,
         stopOnTerminate: true,   // <-- Allow the background-service to continue tracking when user closes the app.
         startOnBoot: false,        // <-- Auto start tracking when device is powered-up.
+    });
+    BackgroundGeolocation.ready({
       }, (state) => {
         console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
         if (!state.enabled) {
@@ -129,6 +130,10 @@ export default class RealReality extends Component {
     });
     this.getPOIs();
   }
+
+  onMotionChange(event) {
+   console.log('[motionchange] -', event.isMoving, event.location);
+ }
 
   render(){
 
@@ -165,14 +170,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     flex: 1,
     paddingTop: 40,
-  },
-  touchable: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderRadius: 4,
-    margin: 8,
-    padding: 8,
-    width: '95%',
   },
   input: {
     height: 40,

@@ -137,6 +137,9 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-background-fetch')
+    compile project(':react-native-background-geolocation')
+    compile project(':react-native-testfairy')
     compile project(':react-native-tts')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
