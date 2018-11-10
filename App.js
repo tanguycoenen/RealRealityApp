@@ -6,7 +6,8 @@ import {
   Text,
   KeyboardAvoidingView,
   View,
-  Button
+  Button,
+  PushNotificationIOS
 } from 'react-native';
 import Tts from 'react-native-tts';
 import BackgroundGeolocation from 'react-native-background-geolocation';
@@ -15,8 +16,11 @@ import BackgroundGeolocation from 'react-native-background-geolocation';
 // rm -rf $TMPDIR/react-*; rm -rf $TMPDIR/haste-*; rm -rf $TMPDIR/metro-*; watchman watch-del-all
 // react-native start  --reset-cache
 
-// every minute, when the app is still in the background, poll POI's and check if the nearest POI is closer
+// every X meters, when the app is still in the background, poll POI's and check if the nearest POI is closer
 // than distance_treshold. If so, read description out loud
+
+// Todo: move SPARQL query code to React Native app istead of server
+// Todo: send out notification when new POI has been detected
 
 export default class RealReality extends Component {
 
@@ -91,10 +95,15 @@ export default class RealReality extends Component {
   }
 
   componentDidMount(){
-    //this.getLocationAndPois();
-
-    // This handler fires whenever bgGeo receives a location update.
-    BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);
+    //this.getLocationAndPois(); //legacy Location and POI polling
+    console.log("testing notifications");
+    PushNotificationIOS.requestPermissions([alert]);
+    setTimeout(function(){
+      PushNotificationIOS.presentLocalNotification({alertBody:"test",title:"test"});
+      console.log("timeout finished");
+    }, 6000);
+    PushNotificationIOS.getDeliveredNotifications((list) => {console.log(list)});
+    BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);   // This handler fires whenever BackgroundGeolocation receives a location update.
     BackgroundGeolocation.onMotionChange(this.onMotionChange);
     BackgroundGeolocation.setConfig({
         debug:true,
@@ -170,13 +179,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     flex: 1,
     paddingTop: 40,
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    margin: 8,
-    padding: 8,
-    width: '95%',
   },
   button:{
     marginRight:40,
