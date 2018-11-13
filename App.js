@@ -28,9 +28,10 @@ export default class RealReality extends Component {
     super(props);
     this.state = {
       dataSource: null,
-      isLoading: true,
+      //isLoading: true,
       latitude: null,
       longitude: null,
+      closestPOILabel: null,
       error: null,
       poi: null,
     };
@@ -60,19 +61,31 @@ export default class RealReality extends Component {
      .then((response) => response.json())
      .then((responseJson) => {
        this.setState({
-         dataSource: responseJson
+         dataSource: responseJson,
+         poi: responseJson.pois[0]['abstract']['value'],
+         closestPOILabel: responseJson.pois[0]['label']['value']
        }, function(){
          console.log("POI's read");
          console.log(this.state.latitude);
          console.log(this.state.longitude);
          console.log(responseJson.pois);
+         PushNotificationIOS.presentLocalNotification({alertBody:this.state.closestPOILabel});
          //Speak selected text using native TTS library
-         Tts.speak(responseJson.pois[0]['abstract']['value']);
+         //Tts.speak(responseJson.pois[0]['abstract']['value']);
+         //this.playTTS();
        });
      })
      .catch((error) =>{
        console.error(error);
      });
+  }
+
+  playTTS () {
+    Tts.speak(this.state.poi);
+  }
+
+  stopTTS () {
+    Tts.stop();
   }
 
   getLocationAndPois() {
@@ -94,19 +107,21 @@ export default class RealReality extends Component {
     )
   }
 
+  sendPOIasLocalNotification(){
+
+  }
+
   componentDidMount(){
     //this.getLocationAndPois(); //legacy Location and POI polling
-    console.log("testing notifications");
     PushNotificationIOS.requestPermissions([alert]);
-    setTimeout(function(){
+    /*setTimeout(function(){
       PushNotificationIOS.presentLocalNotification({alertBody:"test",title:"test"});
       console.log("timeout finished");
-    }, 6000);
-    PushNotificationIOS.getDeliveredNotifications((list) => {console.log(list)});
+    }, 6000);*/
     BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);   // This handler fires whenever BackgroundGeolocation receives a location update.
     BackgroundGeolocation.onMotionChange(this.onMotionChange);
     BackgroundGeolocation.setConfig({
-        debug:true,
+        debug:false,
         logLevel: BackgroundGeolocation.LOG_LEVEL_ERROR,
         desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
         distanceFilter: 400,
@@ -137,7 +152,7 @@ export default class RealReality extends Component {
       longitude: location.coords.longitude,
       error: null,
     });
-    this.getPOIs();
+    this.getLocationAndPois();
   }
 
   onMotionChange(event) {
@@ -148,15 +163,29 @@ export default class RealReality extends Component {
 
     return(
        <KeyboardAvoidingView style={styles.container} behavior="padding">
-               <Text style={styles.title}>RealRealityApp_v0.2</Text>
+               <Text style={styles.title}>RealRealityApp_v0.3.0</Text>
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
                <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
+               <Text style={styles.text}>Closest POI: {this.state.closestPOILabel}</Text>
                {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
+               <TouchableOpacity
+                 style={styles.button}
+                 onPress={this.getLocationAndPois.bind(this)}
+                 underlayColor='#fff'>
+                 <Text style={styles.buttonText}>Load closest POI</Text>
+               </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={this.getLocationAndPois.bind(this)}
+                  //onPress={this.getLocationAndPois.bind(this)}
+                  onPress={this.playTTS.bind(this)}
                   underlayColor='#fff'>
-                  <Text style={styles.buttonText}>Read me the closest POI</Text>
+                  <Text style={styles.buttonText}>Read the closest POI</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.stopTTS.bind(this)}
+                  underlayColor='#fff'>
+                  <Text style={styles.buttonText}>Stop reading</Text>
                 </TouchableOpacity>
          </KeyboardAvoidingView>
 
