@@ -21,6 +21,7 @@ import BackgroundGeolocation from 'react-native-background-geolocation';
 
 // Todo: move SPARQL query code to React Native app istead of server
 // Todo: send out notification when new POI has been detected
+// Todo
 
 export default class RealReality extends Component {
 
@@ -55,6 +56,7 @@ export default class RealReality extends Component {
   }
 
   getPOIs() {
+    console.log("getPOIs");
     url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
     console.log(url);
     fetch(url)
@@ -69,7 +71,7 @@ export default class RealReality extends Component {
          console.log(this.state.latitude);
          console.log(this.state.longitude);
          console.log(responseJson.pois);
-         PushNotificationIOS.presentLocalNotification({alertBody:this.state.closestPOILabel});
+         PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.closestPOILabel});
          //Speak selected text using native TTS library
          //Tts.speak(responseJson.pois[0]['abstract']['value']);
          //this.playTTS();
@@ -91,6 +93,8 @@ export default class RealReality extends Component {
   getLocationAndPois() {
     this.getGeoLocationPromise().then(
       result => {
+        console.log("Geolocation promise returned");
+        console.log(coords);
         this.setState({
           latitude: coords[0],
           longitude: coords[1],
@@ -152,7 +156,7 @@ export default class RealReality extends Component {
       longitude: location.coords.longitude,
       error: null,
     });
-    this.getLocationAndPois();
+    this.getPOIs();
   }
 
   onMotionChange(event) {
@@ -163,7 +167,7 @@ export default class RealReality extends Component {
 
     return(
        <KeyboardAvoidingView style={styles.container} behavior="padding">
-               <Text style={styles.title}>RealRealityApp_v0.3.0</Text>
+               <Text style={styles.title}>RealRealityApp v0.3.0</Text>
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
                <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
                <Text style={styles.text}>Closest POI: {this.state.closestPOILabel}</Text>
@@ -179,7 +183,7 @@ export default class RealReality extends Component {
                   //onPress={this.getLocationAndPois.bind(this)}
                   onPress={this.playTTS.bind(this)}
                   underlayColor='#fff'>
-                  <Text style={styles.buttonText}>Read the closest POI</Text>
+                  <Text style={styles.buttonText}>Read closest POI</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.button}
