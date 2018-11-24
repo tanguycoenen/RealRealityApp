@@ -32,9 +32,15 @@ export default class RealReality extends Component {
       notifiedPOIs: [],
       latitude: null,
       longitude: null,
-      closestPOILabel: null,
       error: null,
-      poi: null,
+      activePOI: {
+        title: null,
+        abstract: null,
+        latitude: 37.78825,
+        longitude: -122.4324,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      },
       region: {
         latitude: 37.78825,
         longitude: -122.4324,
@@ -43,8 +49,6 @@ export default class RealReality extends Component {
       }
     };
   }
-
-
 
   getGeoLocationPromise() {
     return new Promise(function(resolve, reject) {
@@ -74,13 +78,20 @@ export default class RealReality extends Component {
      .then((responseJson) => {
        this.setState({
          poi: responseJson.pois[0]['abstract']['value'],
-         closestPOILabel: responseJson.pois[0]['label']['value']
+         activePOI: {
+           title: responseJson.pois[0]['label']['value'],
+           abstract: responseJson.pois[0]['abstract']['value'],
+           latitude: parseFloat(responseJson.pois[0]['lat']['value']),
+           longitude: parseFloat(responseJson.pois[0]['long']['value']),
+         }
        }, function(){
          console.log("POI's read");
+         console.log("activePOI");
+         console.log(this.state.activePOI);
          console.log(this.state.latitude);
          console.log(this.state.longitude);
          console.log(responseJson.pois);
-         PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.closestPOILabel});
+         PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
          //Speak selected text using native TTS library
          //Tts.speak(responseJson.pois[0]['abstract']['value']);
          //this.playTTS();
@@ -94,7 +105,7 @@ export default class RealReality extends Component {
 
 
   playTTS () {
-    Tts.speak(this.state.poi);
+    Tts.speak(this.state.activePOI.abstract);
   }
 
   stopTTS () {
@@ -122,17 +133,6 @@ export default class RealReality extends Component {
     )
   }
 
-  getInitialState() {
-  return {
-    region: {
-      latitude: 37.78825,
-      longitude: -122.4324,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
-    },
-  };
-  }
-
   componentDidMount(){
     //this.getLocationAndPois(); //legacy Location and POI polling
     PushNotificationIOS.requestPermissions([alert]);
@@ -151,13 +151,12 @@ export default class RealReality extends Component {
     BackgroundGeolocation.ready({
       }, (state) => {
         console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
-        let currentLocation = BackgroundGeolocation.getCurrentPosition({
+         let currentLocation = BackgroundGeolocation.getCurrentPosition({
           timeout: 30,          // 30 second timeout to fetch location
           maximumAge: 5000,     // Accept the last-known-location if not older than 5000 ms.
           desiredAccuracy: 10,  // Try to fetch a location with an accuracy of `10` meters.
           samples: 3,           // How many location samples to attempt.
         });
-        console.log(currentLocation.coords);
         if (!state.enabled) {
           BackgroundGeolocation.start(function() {
             console.log("- Start success");
@@ -197,7 +196,7 @@ export default class RealReality extends Component {
                <Text style={styles.title}>RealRealityApp v0.3.0</Text>
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
                <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
-               <Text style={styles.text}>Closest POI: {this.state.closestPOILabel}</Text>
+               <Text style={styles.text}>Closest POI: {this.state.activePOI.title}</Text>
                {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
                <TouchableOpacity
                  style={styles.button}
@@ -222,13 +221,17 @@ export default class RealReality extends Component {
          <MapView
            style={styles.map}
            region={this.state.region}
-           //onRegionChange={this.onRegionChange}
          >
          <MapView.Marker
-          coordinate={ this.state.region }
+          //style={styles.POIMarker}
+          coordinate={ this.state.activePOI }
+          pinColor='#000000'
         />
+        <MapView.Marker
+         coordinate={ this.state.region }
+         pinColor='blue'
+       />
          </MapView>
-
          </View>
 
     );
@@ -240,6 +243,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 24,
     color: '#ffffff',
+  },
+  POIMarker: {
+    color: 'blue'
   },
   text: {
     paddingBottom: 2,
@@ -270,7 +276,6 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1.5,
-    //...StyleSheet.absoluteFillObject,
-   paddingTop: 10,
+    paddingTop: 10,
  },
 });
