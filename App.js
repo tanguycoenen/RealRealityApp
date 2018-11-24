@@ -9,6 +9,7 @@ import {
   Button,
   PushNotificationIOS
 } from 'react-native';
+import MapView from 'react-native-maps';
 import Tts from 'react-native-tts';
 import BackgroundGeolocation from 'react-native-background-geolocation';
 
@@ -28,15 +29,22 @@ export default class RealReality extends Component {
   constructor(props){
     super(props);
     this.state = {
-      dataSource: null,
-      //isLoading: true,
+      notifiedPOIs: [],
       latitude: null,
       longitude: null,
       closestPOILabel: null,
       error: null,
       poi: null,
+      region: {
+        latitude: 37.78825,
+        longitude: -122.4324,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      }
     };
   }
+
+
 
   getGeoLocationPromise() {
     return new Promise(function(resolve, reject) {
@@ -58,12 +66,13 @@ export default class RealReality extends Component {
   getPOIs() {
     console.log("getPOIs");
     url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
+    //this.state.region.latitude = this.state.latitude;
+    //this.state.region.longitude = this.state.longitude;
     console.log(url);
     fetch(url)
      .then((response) => response.json())
      .then((responseJson) => {
        this.setState({
-         dataSource: responseJson,
          poi: responseJson.pois[0]['abstract']['value'],
          closestPOILabel: responseJson.pois[0]['label']['value']
        }, function(){
@@ -81,6 +90,8 @@ export default class RealReality extends Component {
        console.error(error);
      });
   }
+
+
 
   playTTS () {
     Tts.speak(this.state.poi);
@@ -111,19 +122,22 @@ export default class RealReality extends Component {
     )
   }
 
-  sendPOIasLocalNotification(){
-
+  getInitialState() {
+  return {
+    region: {
+      latitude: 37.78825,
+      longitude: -122.4324,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
+    },
+  };
   }
 
   componentDidMount(){
     //this.getLocationAndPois(); //legacy Location and POI polling
     PushNotificationIOS.requestPermissions([alert]);
-    /*setTimeout(function(){
-      PushNotificationIOS.presentLocalNotification({alertBody:"test",title:"test"});
-      console.log("timeout finished");
-    }, 6000);*/
     BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);   // This handler fires whenever BackgroundGeolocation receives a location update.
-    BackgroundGeolocation.onMotionChange(this.onMotionChange);
+    //BackgroundGeolocation.onMotionChange(this.onMotionChange);
     BackgroundGeolocation.setConfig({
         debug:false,
         logLevel: BackgroundGeolocation.LOG_LEVEL_ERROR,
@@ -137,6 +151,13 @@ export default class RealReality extends Component {
     BackgroundGeolocation.ready({
       }, (state) => {
         console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
+        let currentLocation = BackgroundGeolocation.getCurrentPosition({
+          timeout: 30,          // 30 second timeout to fetch location
+          maximumAge: 5000,     // Accept the last-known-location if not older than 5000 ms.
+          desiredAccuracy: 10,  // Try to fetch a location with an accuracy of `10` meters.
+          samples: 3,           // How many location samples to attempt.
+        });
+        console.log(currentLocation.coords);
         if (!state.enabled) {
           BackgroundGeolocation.start(function() {
             console.log("- Start success");
@@ -154,6 +175,12 @@ export default class RealReality extends Component {
     this.setState({
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
+      region: {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          },
       error: null,
     });
     this.getPOIs();
@@ -164,9 +191,9 @@ export default class RealReality extends Component {
  }
 
   render(){
-
     return(
-       <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <View style={styles.textContainer}>
+       <KeyboardAvoidingView style={styles.textContainer} behavior="padding">
                <Text style={styles.title}>RealRealityApp v0.3.0</Text>
                <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
                <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
@@ -192,6 +219,17 @@ export default class RealReality extends Component {
                   <Text style={styles.buttonText}>Stop reading</Text>
                 </TouchableOpacity>
          </KeyboardAvoidingView>
+         <MapView
+           style={styles.map}
+           region={this.state.region}
+           //onRegionChange={this.onRegionChange}
+         >
+         <MapView.Marker
+          coordinate={ this.state.region }
+        />
+         </MapView>
+
+         </View>
 
     );
   }
@@ -208,10 +246,10 @@ const styles = StyleSheet.create({
     padding: 8,
     color: '#ffffff',
   },
-  container: {
+  textContainer: {
     backgroundColor: '#000000',
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 10,
   },
   button:{
     marginRight:40,
@@ -229,5 +267,10 @@ const styles = StyleSheet.create({
       textAlign:'center',
       paddingLeft : 10,
       paddingRight : 10
-  }
+  },
+  map: {
+    flex: 1.5,
+    //...StyleSheet.absoluteFillObject,
+   paddingTop: 10,
+ },
 });
