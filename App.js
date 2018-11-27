@@ -33,6 +33,7 @@ export default class RealReality extends Component {
       latitude: null,
       longitude: null,
       error: null,
+      notifiedPOIs: [],
       activePOI: {
         title: null,
         abstract: null,
@@ -115,7 +116,11 @@ export default class RealReality extends Component {
          console.log(this.state.latitude);
          console.log(this.state.longitude);
          console.log(responseJson.pois);
-         PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
+         if (this.state.notifiedPOIs.indexOf(this.state.activePOI.title) == -1) {
+           PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
+           this.state.notifiedPOIs.push(this.state.activePOI.title);
+         }
+         else console.log ("User was already notified of POI: "+ this.state.activePOI.title);
        });
      })
      .catch((error) =>{
@@ -168,6 +173,9 @@ export default class RealReality extends Component {
 
   componentWillUnmount() {
     BackgroundGeolocation.removeListeners();
+    this.setState({
+      notifiedPOIs : []
+    });
   }
 
   onLocation(location) {
@@ -207,7 +215,6 @@ export default class RealReality extends Component {
                </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.button}
-                  //onPress={this.getLocationAndPois.bind(this)}
                   onPress={this.playTTS.bind(this)}
                   underlayColor='#fff'>
                   <Text style={styles.buttonText}>Read closest POI</Text>
@@ -246,9 +253,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 24,
     color: '#ffffff',
-  },
-  POIMarker: {
-    color: 'blue'
   },
   text: {
     paddingBottom: 2,
