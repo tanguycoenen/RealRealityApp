@@ -50,68 +50,6 @@ export default class RealReality extends Component {
     };
   }
 
-  getGeoLocationPromise() {
-    return new Promise(function(resolve, reject) {
-      console.log("getGeoLocationPromise");
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-            coords = [position.coords.latitude,position.coords.longitude];
-            resolve(coords);
-          });
-        },
-        (error) => {
-          this.setState({ error: error.message });
-          reject(error.message);
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
-      )
-  }
-
-  getPOIs() {
-    console.log("getPOIs");
-    url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
-    //this.state.region.latitude = this.state.latitude;
-    //this.state.region.longitude = this.state.longitude;
-    console.log(url);
-    fetch(url)
-     .then((response) => response.json())
-     .then((responseJson) => {
-       this.setState({
-         poi: responseJson.pois[0]['abstract']['value'],
-         activePOI: {
-           title: responseJson.pois[0]['label']['value'],
-           abstract: responseJson.pois[0]['abstract']['value'],
-           latitude: parseFloat(responseJson.pois[0]['lat']['value']),
-           longitude: parseFloat(responseJson.pois[0]['long']['value']),
-         }
-       }, function(){
-         console.log("POI's read");
-         console.log("activePOI");
-         console.log(this.state.activePOI);
-         console.log(this.state.latitude);
-         console.log(this.state.longitude);
-         console.log(responseJson.pois);
-         PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
-         //Speak selected text using native TTS library
-         //Tts.speak(responseJson.pois[0]['abstract']['value']);
-         //this.playTTS();
-       });
-     })
-     .catch((error) =>{
-       console.error(error);
-     });
-  }
-
-
-
-  playTTS () {
-    Tts.speak(this.state.activePOI.abstract);
-  }
-
-  stopTTS () {
-    Tts.stop();
-  }
-
   getLocationAndPois() {
     this.getGeoLocationPromise().then(
       result => {
@@ -133,9 +71,69 @@ export default class RealReality extends Component {
     )
   }
 
+  getGeoLocationPromise() {
+    return new Promise(
+      function(resolve, reject) {
+        console.log("getGeoLocationPromise");
+        let currentLocation = BackgroundGeolocation.getCurrentPosition({
+         timeout: 30,          // 30 second timeout to fetch location
+         maximumAge: 5000,     // Accept the last-known-location if not older than 5000 ms.
+         desiredAccuracy: 10,  // Try to fetch a location with an accuracy of `10` meters.
+         samples: 3,           // How many location samples to attempt.
+         }).then((response) => console.log(response.coords.latitude))
+         .catch((error) =>{
+           console.error(error);
+         });
+      },
+      (error) => {
+        this.setState({ error: error.message });
+        reject(error.message);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+    )
+  }
+
+  getPOIs() {
+    console.log("getPOIs");
+    url = 'https://realreality.be/json/'+this.state.latitude+'/'+this.state.longitude;
+    console.log(url);
+    fetch(url)
+     .then((response) => response.json())
+     .then((responseJson) => {
+       this.setState({
+         poi: responseJson.pois[0]['abstract']['value'],
+         activePOI: {
+           title: responseJson.pois[0]['label']['value'],
+           abstract: responseJson.pois[0]['abstract']['value'],
+           latitude: parseFloat(responseJson.pois[0]['lat']['value']),
+           longitude: parseFloat(responseJson.pois[0]['long']['value']),
+         }
+       }, function(){
+         console.log("POI's read");
+         console.log("activePOI");
+         console.log(this.state.activePOI);
+         console.log(this.state.latitude);
+         console.log(this.state.longitude);
+         console.log(responseJson.pois);
+         PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
+       });
+     })
+     .catch((error) =>{
+       console.error(error);
+     });
+  }
+
+  playTTS () {
+    Tts.speak(this.state.activePOI.abstract);
+  }
+
+  stopTTS () {
+    Tts.stop();
+  }
+
   componentDidMount(){
     //this.getLocationAndPois(); //legacy Location and POI polling
-    PushNotificationIOS.requestPermissions([alert]);
+    PushNotificationIOS.requestPermissions();
     BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);   // This handler fires whenever BackgroundGeolocation receives a location update.
     //BackgroundGeolocation.onMotionChange(this.onMotionChange);
     BackgroundGeolocation.setConfig({
@@ -156,6 +154,9 @@ export default class RealReality extends Component {
           maximumAge: 5000,     // Accept the last-known-location if not older than 5000 ms.
           desiredAccuracy: 10,  // Try to fetch a location with an accuracy of `10` meters.
           samples: 3,           // How many location samples to attempt.
+        }).then((response) => console.log(response.coords.latitude))
+        .catch((error) =>{
+          console.error(error);
         });
         if (!state.enabled) {
           BackgroundGeolocation.start(function() {
@@ -193,9 +194,9 @@ export default class RealReality extends Component {
     return(
       <View style={styles.textContainer}>
        <KeyboardAvoidingView style={styles.textContainer} behavior="padding">
-               <Text style={styles.title}>RealRealityApp v0.3.0</Text>
-               <Text style={styles.text}>Latitude: {this.state.latitude}</Text>
-               <Text style={styles.text}>Longitude: {this.state.longitude}</Text>
+               <Text style={styles.title}>RealRealityApp</Text>
+               <Text style={styles.text}>Your Latitude: {this.state.latitude}</Text>
+               <Text style={styles.text}>Your Longitude: {this.state.longitude}</Text>
                <Text style={styles.text}>Closest POI: {this.state.activePOI.title}</Text>
                {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
                <TouchableOpacity
@@ -225,10 +226,12 @@ export default class RealReality extends Component {
          <MapView.Marker
           //style={styles.POIMarker}
           coordinate={ this.state.activePOI }
+          title = { this.state.activePOI.title }
           pinColor='#000000'
         />
         <MapView.Marker
          coordinate={ this.state.region }
+         title = { "Your Location" }
          pinColor='blue'
        />
          </MapView>
