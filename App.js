@@ -38,10 +38,10 @@ export default class RealReality extends Component {
       longitude: null,
       error: null,
       notifiedPOIs: [],
+      allPOIs: [],
       activePOI: {
         title: null,
         abstract: null,
-        shortAbstract:null,
         latitude: 37.78825,
         longitude: -122.4324,
         latitudeDelta: 0.0922,
@@ -107,11 +107,11 @@ export default class RealReality extends Component {
      .then((response) => response.json())
      .then((responseJson) => {
        this.setState({
+         allPOIs: responseJson.pois,
          poi: responseJson.pois[0]['abstract']['value'],
          activePOI: {
            title: responseJson.pois[0]['label']['value'],
            abstract: responseJson.pois[0]['abstract']['value'],
-           shortAbstract: responseJson.pois[0]['abstract']['value'].substr(0,200),
            latitude: parseFloat(responseJson.pois[0]['lat']['value']),
            longitude: parseFloat(responseJson.pois[0]['long']['value']),
          }
@@ -121,7 +121,7 @@ export default class RealReality extends Component {
          console.log(this.state.activePOI);
          console.log(this.state.latitude);
          console.log(this.state.longitude);
-         console.log(responseJson.pois);
+         console.log(this.state.allPOIs);
          if (this.state.notifiedPOIs.indexOf(this.state.activePOI.title) == -1) {
            PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
            this.state.notifiedPOIs.push(this.state.activePOI.title);
@@ -216,17 +216,29 @@ export default class RealReality extends Component {
            style={styles.map}
            region={this.state.region}
          >
-           <MapView.Marker
-            //style={styles.POIMarker}
-            coordinate={ this.state.activePOI }
-            title = { this.state.activePOI.title }
-            pinColor='#000000'
-           />
-            <MapView.Marker
-             coordinate={ this.state.region }
-             title = { "Your Location" }
-             pinColor='blue'
-            />
+         {this.state.allPOIs.map(poi => (
+          <MapView.Marker
+            coordinate={{
+                          latitude:parseFloat(poi['lat']['value']),
+                          longitude:parseFloat(poi['long']['value'])
+                      }}
+            title={poi['label']['value']}
+            description={poi['abstract']['value']}
+            style={styles.marker}
+          />
+        ))}
+         <MapView.Marker
+          //style={styles.POIMarker}
+          coordinate={ this.state.activePOI }
+          title = { this.state.activePOI.title }
+          pinColor='#000000'
+         />
+          <MapView.Marker
+           coordinate={ this.state.region }
+           title = { "Your Location" }
+           pinColor='blue'
+          />
+
          </MapView>
          <View style={styles.actionButtonSection}>
            <TouchableOpacity
@@ -249,7 +261,6 @@ export default class RealReality extends Component {
            </TouchableOpacity>
          </View>
        </View>
-
     );
   }
 }
@@ -278,6 +289,9 @@ const styles = StyleSheet.create({
   },
   spacerSection: {
     flex:7
+  },
+  marker: {
+    height:500
   },
   poiInfoSection: {
     backgroundColor:'white',
