@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
   StyleSheet,
   TextInput,
+  ScrollView,
   TouchableOpacity,
   Text,
   KeyboardAvoidingView,
@@ -12,7 +13,10 @@ import {
 import MapView from 'react-native-maps';
 import Tts from 'react-native-tts';
 import BackgroundGeolocation from 'react-native-background-geolocation';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
+const iconSize=40;
+console.disableYellowBox = true;
 // In order to avoid error relate to not finding module react-transform-hmr
 // rm -rf $TMPDIR/react-*; rm -rf $TMPDIR/haste-*; rm -rf $TMPDIR/metro-*; watchman watch-del-all
 // react-native start  --reset-cache
@@ -37,6 +41,7 @@ export default class RealReality extends Component {
       activePOI: {
         title: null,
         abstract: null,
+        shortAbstract:null,
         latitude: 37.78825,
         longitude: -122.4324,
         latitudeDelta: 0.0922,
@@ -106,6 +111,7 @@ export default class RealReality extends Component {
          activePOI: {
            title: responseJson.pois[0]['label']['value'],
            abstract: responseJson.pois[0]['abstract']['value'],
+           shortAbstract: responseJson.pois[0]['abstract']['value'].substr(0,200),
            latitude: parseFloat(responseJson.pois[0]['lat']['value']),
            longitude: parseFloat(responseJson.pois[0]['long']['value']),
          }
@@ -129,6 +135,7 @@ export default class RealReality extends Component {
   }
 
   playTTS () {
+    console.log("selected play");
     Tts.speak(this.state.activePOI.abstract);
   }
 
@@ -200,89 +207,103 @@ export default class RealReality extends Component {
 
   render(){
     return(
-      <View style={styles.textContainer}>
-       <KeyboardAvoidingView style={styles.textContainer} behavior="padding">
-               <Text style={styles.title}>RealRealityApp</Text>
-               <Text style={styles.text}>Your Latitude: {this.state.latitude}</Text>
-               <Text style={styles.text}>Your Longitude: {this.state.longitude}</Text>
-               <Text style={styles.text}>Closest POI: {this.state.activePOI.title}</Text>
-               {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
-               <TouchableOpacity
-                 style={styles.button}
-                 onPress={this.getLocationAndPois.bind(this)}
-                 underlayColor='#fff'>
-                 <Text style={styles.buttonText}>Load closest POI</Text>
-               </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={this.playTTS.bind(this)}
-                  underlayColor='#fff'>
-                  <Text style={styles.buttonText}>Read closest POI</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={this.stopTTS.bind(this)}
-                  underlayColor='#fff'>
-                  <Text style={styles.buttonText}>Stop reading</Text>
-                </TouchableOpacity>
-         </KeyboardAvoidingView>
+       <View style={styles.container}>
+         <View style={styles.poiInfoSection}>
+           <Text style={styles.poiTitle}>{this.state.activePOI.title}</Text>
+           <Text style={styles.poiText}>{this.state.activePOI.abstract}</Text>
+         </View>
          <MapView
            style={styles.map}
            region={this.state.region}
          >
-         <MapView.Marker
-          //style={styles.POIMarker}
-          coordinate={ this.state.activePOI }
-          title = { this.state.activePOI.title }
-          pinColor='#000000'
-        />
-        <MapView.Marker
-         coordinate={ this.state.region }
-         title = { "Your Location" }
-         pinColor='blue'
-       />
+           <MapView.Marker
+            //style={styles.POIMarker}
+            coordinate={ this.state.activePOI }
+            title = { this.state.activePOI.title }
+            pinColor='#000000'
+           />
+            <MapView.Marker
+             coordinate={ this.state.region }
+             title = { "Your Location" }
+             pinColor='blue'
+            />
          </MapView>
+         <View style={styles.actionButtonSection}>
+           <TouchableOpacity
+             style={styles.button}
+             onPress={this.getLocationAndPois.bind(this)}
+             underlayColor='#fff'>
+             <Icon style={styles.buttonIcon} name="retweet" size={iconSize} />
+           </TouchableOpacity>
+           <TouchableOpacity
+             style={styles.button}
+             onPress={this.playTTS.bind(this)}
+             underlayColor='#fff'>
+             <Icon style={styles.buttonIcon} name="play" size={iconSize} />
+           </TouchableOpacity>
+           <TouchableOpacity
+             style={styles.button}
+             onPress={this.stopTTS.bind(this)}
+             underlayColor='#fff'>
+             <Icon style={styles.buttonIcon} name="stop" size={iconSize} />
+           </TouchableOpacity>
          </View>
+       </View>
 
     );
   }
 }
 const styles = StyleSheet.create({
-  title: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 24,
-    color: '#ffffff',
-  },
-  text: {
-    paddingBottom: 2,
-    padding: 8,
-    color: '#ffffff',
-  },
-  textContainer: {
-    backgroundColor: '#000000',
+  container: {
     flex: 1,
-    paddingTop: 10,
-  },
-  button:{
-    marginRight:40,
-    marginLeft:40,
-    marginTop:10,
-    paddingTop:10,
-    paddingBottom:10,
-    backgroundColor:'#139622',
-    borderRadius:10,
-    borderWidth: 0,
-    borderColor: '#fff'
-  },
-  buttonText:{
-      color:'#fff',
-      textAlign:'center',
-      paddingLeft : 10,
-      paddingRight : 10
   },
   map: {
-    flex: 1.5,
-    paddingTop: 10,
- },
+    flex: 9.25,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'stretch'
+  },
+  actionButtonSection: {
+    height:50,
+    paddingBottom:15,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  button: {
+
+  },
+  buttonIcon:{
+    color:'#46A9FC'
+  },
+  spacerSection: {
+    flex:7
+  },
+  poiInfoSection: {
+    backgroundColor:'white',
+    marginTop:10,
+    paddingTop:10,
+    paddingBottom:5,
+    paddingLeft:10,
+    paddingRight:10,
+    borderRadius:10,
+    borderColor:'black',
+    borderWidth:0,
+    flex:2,
+    width:"100%",
+
+  },
+  poiTitle: {
+    color:'black',
+    flex:0.2,
+    fontWeight: 'bold',
+    marginTop:15,
+    position: 'relative',
+  },
+  poiText: {
+    color:'black',
+    flex:0.8,
+    marginTop:2,
+    position: 'relative',
+  }
 });
