@@ -203,12 +203,28 @@ export default class RealReality extends Component {
 
   onMotionChange(event) {
    console.log('[motionchange] -', event.isMoving, event.location);
- }
+  }
+
+  selectedMarker(event){
+    console.log(event);
+    this.setState({
+      region: {
+        latitude: event.nativeEvent.coordinate.latitude,
+        longitude: event.nativeEvent.coordinate.longitude
+      },
+      activePOI: {
+        title: event.title,
+        abstract: event.abstract,
+        latitude: event.nativeEvent.coordinate.latitude,
+        longitude: event.nativeEvent.coordinate.longitude,
+      }
+    })
+  }
 
   render(){
     return(
        <View style={styles.container}>
-         <View style={styles.poiInfoSection}>
+         <View style={styles.poiInfoSection} key={'poiInfoSection'}>
            <Text style={styles.poiTitle}>{this.state.activePOI.title}</Text>
            <Text style={styles.poiText}>{this.state.activePOI.abstract}</Text>
          </View>
@@ -218,15 +234,22 @@ export default class RealReality extends Component {
          >
          {this.state.allPOIs.map(poi => (
           <MapView.Marker
+            key={poi['label']['value']+poi['lat']['value']}
             coordinate={{
                           latitude:parseFloat(poi['lat']['value']),
                           longitude:parseFloat(poi['long']['value'])
                       }}
             title={poi['label']['value']}
             description={poi['abstract']['value']}
-            style={styles.marker}
+            onPress={(e) => {
+              e.title=poi['label']['value'];
+              e.abstract = poi['abstract']['value'];
+              this.selectedMarker(e);
+              }
+            }
+            style={styles.callout}
           />
-        ))}
+         ))}
          <MapView.Marker
           //style={styles.POIMarker}
           coordinate={ this.state.activePOI }
@@ -290,7 +313,7 @@ const styles = StyleSheet.create({
   spacerSection: {
     flex:7
   },
-  marker: {
+  callout: {
     height:500
   },
   poiInfoSection: {
