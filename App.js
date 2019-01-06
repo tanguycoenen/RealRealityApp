@@ -17,6 +17,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const iconSize=40;
 console.disableYellowBox = true;
+const INITIAL_LATITUDE= 37.78825;
+const INITIAL_LONGITUDE= -122.4324;
 // In order to avoid error relate to not finding module react-transform-hmr
 // rm -rf $TMPDIR/react-*; rm -rf $TMPDIR/haste-*; rm -rf $TMPDIR/metro-*; watchman watch-del-all
 // react-native start  --reset-cache
@@ -29,7 +31,6 @@ console.disableYellowBox = true;
 // Todo
 
 export default class RealReality extends Component {
-
   constructor(props){
     super(props);
     this.state = {
@@ -42,8 +43,8 @@ export default class RealReality extends Component {
       activePOI: {
         title: null,
         abstract: null,
-        latitude: 37.78825,
-        longitude: -122.4324,
+        latitude: INITIAL_LATITUDE,
+        longitude: INITIAL_LONGITUDE,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       },
@@ -52,8 +53,45 @@ export default class RealReality extends Component {
         longitude: -122.4324,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
-      }
+      },
+      userLocation: null,
+      infoPOITitle:null,
+      infoPOIAbstract:null
     };
+    this.initiateLocation();
+    this.getLocationAndPois();
+  }
+
+  initiateLocation() {
+    BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);   // This handler fires whenever BackgroundGeolocation receives a location update.
+    BackgroundGeolocation.setConfig({
+        debug:false,
+        logLevel: BackgroundGeolocation.LOG_LEVEL_ERROR,
+        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+        distanceFilter: 400,
+        activityRecognitionInterval:10000,
+        stopTimeout: 1,
+        stopOnTerminate: true,   // <-- Allow the background-service to continue tracking when user closes the app.
+        startOnBoot: false,        // <-- Auto start tracking when device is powered-up.
+    });
+    BackgroundGeolocation.ready({
+      }, (state) => {
+        console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
+         let currentLocation = BackgroundGeolocation.getCurrentPosition({
+          timeout: 30,          // 30 second timeout to fetch location
+          maximumAge: 5000,     // Accept the last-known-location if not older than 5000 ms.
+          desiredAccuracy: 10,  // Try to fetch a location with an accuracy of `10` meters.
+          samples: 3,           // How many location samples to attempt.
+        }).then((response) => console.log(response.coords.latitude))
+        .catch((error) =>{
+          console.error(error);
+        });
+        if (!state.enabled) {
+          BackgroundGeolocation.start(function() {
+            console.log("- Start success");
+          });
+        }
+      });
   }
 
   getLocationAndPois() {
@@ -109,12 +147,15 @@ export default class RealReality extends Component {
        this.setState({
          allPOIs: responseJson.pois,
          poi: responseJson.pois[0]['abstract']['value'],
+         //make the closest POI the active one
          activePOI: {
            title: responseJson.pois[0]['label']['value'],
            abstract: responseJson.pois[0]['abstract']['value'],
            latitude: parseFloat(responseJson.pois[0]['lat']['value']),
            longitude: parseFloat(responseJson.pois[0]['long']['value']),
-         }
+         },
+         infoPOITitle: responseJson.pois[0]['label']['value'],
+         infoPOIAbstract: responseJson.pois[0]['abstract']['value']
        }, function(){
          console.log("POI's read");
          console.log("activePOI");
@@ -146,36 +187,7 @@ export default class RealReality extends Component {
   componentDidMount(){
     //this.getLocationAndPois(); //legacy Location and POI polling
     PushNotificationIOS.requestPermissions();
-    BackgroundGeolocation.onLocation(this.onLocation.bind(this), this.onError);   // This handler fires whenever BackgroundGeolocation receives a location update.
-    //BackgroundGeolocation.onMotionChange(this.onMotionChange);
-    BackgroundGeolocation.setConfig({
-        debug:false,
-        logLevel: BackgroundGeolocation.LOG_LEVEL_ERROR,
-        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-        distanceFilter: 400,
-        activityRecognitionInterval:10000,
-        stopTimeout: 1,
-        stopOnTerminate: true,   // <-- Allow the background-service to continue tracking when user closes the app.
-        startOnBoot: false,        // <-- Auto start tracking when device is powered-up.
-    });
-    BackgroundGeolocation.ready({
-      }, (state) => {
-        console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
-         let currentLocation = BackgroundGeolocation.getCurrentPosition({
-          timeout: 30,          // 30 second timeout to fetch location
-          maximumAge: 5000,     // Accept the last-known-location if not older than 5000 ms.
-          desiredAccuracy: 10,  // Try to fetch a location with an accuracy of `10` meters.
-          samples: 3,           // How many location samples to attempt.
-        }).then((response) => console.log(response.coords.latitude))
-        .catch((error) =>{
-          console.error(error);
-        });
-        if (!state.enabled) {
-          BackgroundGeolocation.start(function() {
-            console.log("- Start success");
-          });
-        }
-      });
+
   }
 
   componentWillUnmount() {
@@ -191,11 +203,15 @@ export default class RealReality extends Component {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
       region: {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          },
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      },
+      userLocation: {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      },
       error: null,
     });
     this.getPOIs();
@@ -208,29 +224,46 @@ export default class RealReality extends Component {
   selectedMarker(event){
     console.log(event);
     this.setState({
-      region: {
-        latitude: event.nativeEvent.coordinate.latitude,
-        longitude: event.nativeEvent.coordinate.longitude
-      },
+      //makse sure that that the region state is updated to match the zoom level in the app at any time
+      infoPOITitle: event.title,
+      infoPOIAbstract: event.abstract,
       activePOI: {
         title: event.title,
         abstract: event.abstract,
         latitude: event.nativeEvent.coordinate.latitude,
         longitude: event.nativeEvent.coordinate.longitude,
-      }
+      },
     })
+    console.log("State set in selectedMarker");
+    console.log(this.state.region);
+  }
+
+  setRegionDeltaAfterZoom(region){
+    console.log(region);
+    this.state.region= {
+        longitude:region.longitude,
+        latitude:region.latitude,
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta
+      };
+    console.log(this.state.region);
   }
 
   render(){
     return(
-       <View style={styles.container}>
-         <View style={styles.poiInfoSection} key={'poiInfoSection'}>
-           <Text style={styles.poiTitle}>{this.state.activePOI.title}</Text>
-           <Text style={styles.poiText}>{this.state.activePOI.abstract}</Text>
+       <View style={styles.container} key={this.state.infoPOITitle}>
+         <View style={styles.poiInfoSection} >
+           <Text style={styles.poiTitle}>{this.state.infoPOITitle}</Text>
+           <Text style={styles.poiText}>{this.state.infoPOIAbstract}</Text>
          </View>
          <MapView
            style={styles.map}
            region={this.state.region}
+           onRegionChangeComplete={
+             region => {
+               this.setRegionDeltaAfterZoom(region);
+             }
+           }
          >
          {this.state.allPOIs.map(poi => (
           <MapView.Marker
@@ -242,6 +275,7 @@ export default class RealReality extends Component {
             title={poi['label']['value']}
             description={poi['abstract']['value']}
             onPress={(e) => {
+              e.persist();
               e.title=poi['label']['value'];
               e.abstract = poi['abstract']['value'];
               this.selectedMarker(e);
@@ -251,17 +285,17 @@ export default class RealReality extends Component {
           />
          ))}
          <MapView.Marker
-          //style={styles.POIMarker}
           coordinate={ this.state.activePOI }
           title = { this.state.activePOI.title }
           pinColor='#000000'
          />
-          <MapView.Marker
-           coordinate={ this.state.region }
-           title = { "Your Location" }
-           pinColor='blue'
-          />
-
+         {this.state.userLocation!=null ?
+             <MapView.Marker
+              coordinate={ this.state.userLocation }
+              title = { "Your Location" }
+              pinColor='blue'
+             />:null
+         }
          </MapView>
          <View style={styles.actionButtonSection}>
            <TouchableOpacity
