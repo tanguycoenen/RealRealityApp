@@ -16,7 +16,7 @@ import BackgroundGeolocation from 'react-native-background-geolocation';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const iconSize=40;
-console.disableYellowBox = true;
+console.disableYellowBox = false;
 const INITIAL_LATITUDE= 37.78825;
 const INITIAL_LONGITUDE= -122.4324;
 // In order to avoid error relate to not finding module react-transform-hmr
@@ -27,7 +27,6 @@ const INITIAL_LONGITUDE= -122.4324;
 // than distance_treshold. If so, read description out loud
 
 // Todo: move SPARQL query code to React Native app istead of server
-// Todo: send out notification when new POI has been detected
 // Todo
 
 export default class RealReality extends Component {
@@ -49,8 +48,8 @@ export default class RealReality extends Component {
         longitudeDelta: 0.0421,
       },
       region: {
-        latitude: 37.78825,
-        longitude: -122.4324,
+        latitude: INITIAL_LATITUDE,
+        longitude: INITIAL_LONGITUDE,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       },
@@ -59,7 +58,7 @@ export default class RealReality extends Component {
       infoPOIAbstract:null
     };
     this.initiateLocation();
-    this.getLocationAndPois();
+    //this.getLocationAndPois();
   }
 
   initiateLocation() {
@@ -187,7 +186,6 @@ export default class RealReality extends Component {
   componentDidMount(){
     //this.getLocationAndPois(); //legacy Location and POI polling
     PushNotificationIOS.requestPermissions();
-
   }
 
   componentWillUnmount() {
@@ -218,13 +216,11 @@ export default class RealReality extends Component {
   }
 
   onMotionChange(event) {
-   console.log('[motionchange] -', event.isMoving, event.location);
+   //console.log('[motionchange] -', event.isMoving, event.location);
   }
 
   selectedMarker(event){
-    console.log(event);
     this.setState({
-      //makse sure that that the region state is updated to match the zoom level in the app at any time
       infoPOITitle: event.title,
       infoPOIAbstract: event.abstract,
       activePOI: {
@@ -234,19 +230,17 @@ export default class RealReality extends Component {
         longitude: event.nativeEvent.coordinate.longitude,
       },
     })
-    console.log("State set in selectedMarker");
-    console.log(this.state.region);
   }
 
   setRegionDeltaAfterZoom(region){
-    console.log(region);
+    //Makse sure that that the region state is updated to match the zoom level in the app at any time
+    //This must be set, or the region will reset to the original constructor value every time a marker is clicked
     this.state.region= {
         longitude:region.longitude,
         latitude:region.latitude,
         latitudeDelta: region.latitudeDelta,
         longitudeDelta: region.longitudeDelta
       };
-    console.log(this.state.region);
   }
 
   render(){
@@ -326,13 +320,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   map: {
-    flex: 9.25,
+    flex: 8,
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'stretch'
   },
   actionButtonSection: {
-    height:50,
+    flex:1,
     paddingBottom:15,
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -344,11 +338,7 @@ const styles = StyleSheet.create({
   buttonIcon:{
     color:'#46A9FC'
   },
-  spacerSection: {
-    flex:7
-  },
   callout: {
-    height:500
   },
   poiInfoSection: {
     backgroundColor:'white',
