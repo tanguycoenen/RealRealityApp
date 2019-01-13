@@ -16,7 +16,7 @@ import BackgroundGeolocation from 'react-native-background-geolocation';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const iconSize=40;
-console.disableYellowBox = false;
+console.disableYellowBox = true;
 const INITIAL_LATITUDE= 37.78825;
 const INITIAL_LONGITUDE= -122.4324;
 // In order to avoid error relate to not finding module react-transform-hmr
@@ -156,12 +156,6 @@ export default class RealReality extends Component {
          infoPOITitle: responseJson.pois[0]['label']['value'],
          infoPOIAbstract: responseJson.pois[0]['abstract']['value']
        }, function(){
-         console.log("POI's read");
-         console.log("activePOI");
-         console.log(this.state.activePOI);
-         console.log(this.state.latitude);
-         console.log(this.state.longitude);
-         console.log(this.state.allPOIs);
          if (this.state.notifiedPOIs.indexOf(this.state.activePOI.title) == -1) {
            PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
            this.state.notifiedPOIs.push(this.state.activePOI.title);
@@ -259,37 +253,35 @@ export default class RealReality extends Component {
              }
            }
          >
-         {this.state.allPOIs.map(poi => (
-          <MapView.Marker
-            key={poi['label']['value']+poi['lat']['value']}
-            coordinate={{
-                          latitude:parseFloat(poi['lat']['value']),
-                          longitude:parseFloat(poi['long']['value'])
-                      }}
-            title={poi['label']['value']}
-            description={poi['abstract']['value']}
-            onPress={(e) => {
-              e.persist();
-              e.title=poi['label']['value'];
-              e.abstract = poi['abstract']['value'];
-              this.selectedMarker(e);
+           {this.state.allPOIs.map(poi => (
+            <MapView.Marker
+              key={poi['label']['value']+poi['lat']['value']}
+              coordinate={{
+                            latitude:parseFloat(poi['lat']['value']),
+                            longitude:parseFloat(poi['long']['value'])
+                        }}
+              title={poi['label']['value']}
+              description={poi['abstract']['value']}
+              onPress={(e) => {
+                e.persist();
+                e.title=poi['label']['value'];
+                e.abstract = poi['abstract']['value'];
+                this.selectedMarker(e);
+                }
               }
-            }
-            style={styles.callout}
-          />
-         ))}
-         <MapView.Marker
-          coordinate={ this.state.activePOI }
-          title = { this.state.activePOI.title }
-          pinColor='#000000'
-         />
-         {this.state.userLocation!=null ?
-             <MapView.Marker
-              coordinate={ this.state.userLocation }
-              title = { "Your Location" }
-              pinColor='blue'
-             />:null
-         }
+              style={styles.callout}
+              pinColor={(poi['label']['value']==this.state.activePOI.title)?"#000000":"#46a9fc"}
+            >
+              <MapView.Callout tooltip={true}/>
+            </MapView.Marker>
+           ))}
+           {this.state.userLocation!=null ?
+               <MapView.Marker
+                coordinate={ this.state.userLocation }
+                title = { "Your Location" }
+                pinColor='blue'
+               />:null
+           }
          </MapView>
          <View style={styles.actionButtonSection}>
            <TouchableOpacity
@@ -358,7 +350,8 @@ const styles = StyleSheet.create({
     color:'black',
     flex:0.2,
     fontWeight: 'bold',
-    marginTop:15,
+    fontSize: 15,
+    marginTop:20,
     position: 'relative',
   },
   poiText: {
