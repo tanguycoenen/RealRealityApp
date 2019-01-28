@@ -96,8 +96,6 @@ export default class RealReality extends Component {
   getLocationAndPois() {
     this.getGeoLocationPromise().then(
       result => {
-        console.log("Geolocation promise returned");
-        console.log(coords);
         this.setState({
           latitude: coords[0],
           longitude: coords[1],
@@ -197,8 +195,8 @@ export default class RealReality extends Component {
       region: {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
+        latitudeDelta: this.state.region.latitudeDelta,
+        longitudeDelta: this.state.region.longitudeDelta,
       },
       userLocation: {
         latitude: location.coords.latitude,
