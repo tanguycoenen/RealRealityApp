@@ -55,7 +55,8 @@ export default class RealReality extends Component {
       },
       userLocation: null,
       infoPOITitle:null,
-      infoPOIAbstract:null
+      infoPOIAbstract:null,
+      infoPOIDistance:null
     };
     this.initiateLocation();
     //this.getLocationAndPois();
@@ -152,7 +153,8 @@ export default class RealReality extends Component {
            longitude: parseFloat(responseJson.pois[0]['long']['value']),
          },
          infoPOITitle: responseJson.pois[0]['label']['value'],
-         infoPOIAbstract: responseJson.pois[0]['abstract']['value']
+         infoPOIAbstract: responseJson.pois[0]['abstract']['value'],
+         infoPOIDistance: responseJson.pois[0]['distance']['value']
        }, function(){
          if (this.state.notifiedPOIs.indexOf(this.state.activePOI.title) == -1) {
            PushNotificationIOS.presentLocalNotification({alertBody:"Available location: "+this.state.activePOI.title});
@@ -215,6 +217,7 @@ export default class RealReality extends Component {
     this.setState({
       infoPOITitle: event.title,
       infoPOIAbstract: event.abstract,
+      infoPOIDistance: event.distance,
       activePOI: {
         title: event.title,
         abstract: event.abstract,
@@ -240,6 +243,7 @@ export default class RealReality extends Component {
        <View style={styles.container} key={this.state.infoPOITitle}>
          <View style={styles.poiInfoSection} >
            <Text style={styles.poiTitle}>{this.state.infoPOITitle}</Text>
+           <Text style={styles.poiDistance}>{this.state.infoPOIDistance} km</Text>
            <Text style={styles.poiText}>{this.state.infoPOIAbstract}</Text>
          </View>
          <MapView
@@ -264,6 +268,7 @@ export default class RealReality extends Component {
                 e.persist();
                 e.title=poi['label']['value'];
                 e.abstract = poi['abstract']['value'];
+                e.distance = poi['distance']['value'];
                 this.selectedMarker(e);
                 }
               }
