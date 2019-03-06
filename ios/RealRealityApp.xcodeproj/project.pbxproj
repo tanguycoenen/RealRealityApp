@@ -72,6 +72,7 @@
 		960C52E021DA05F50024BEEC /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 960C52D121DA05F40024BEEC /* SimpleLineIcons.ttf */; };
 		960C52E121DA05F50024BEEC /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 960C52D221DA05F40024BEEC /* MaterialIcons.ttf */; };
 		961E5A8121972C660091CA32 /* libRCTPushNotification.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 961E5A7E21972C5B0091CA32 /* libRCTPushNotification.a */; };
+		961FBBAB22301C55001AAF45 /* libKCKeepAwake.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96E5E8C6220F32BD0083A269 /* libKCKeepAwake.a */; };
 		98BB4FABB70942C191E27F2C /* TSLocationManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67C1FE16D3344F20B3750133 /* TSLocationManager.framework */; };
 		A9340E31EB82409AB5271F7A /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDE90E2AE3DF4F4DAC7E7C93 /* Foundation.ttf */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
@@ -420,6 +421,13 @@
 			remoteGlobalIDString = 11FA5C511C4A1296003AC2EE;
 			remoteInfo = AirMaps;
 		};
+		96E5E8C5220F32BD0083A269 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96E5E8BF220F32BD0083A269 /* KCKeepAwake.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = KCKeepAwake;
+		};
 		ADBDB9261DFEBF0700ED6528 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */;
@@ -487,6 +495,7 @@
 		961E5A7821972C5B0091CA32 /* RCTPushNotification.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTPushNotification.xcodeproj; path = "../node_modules/react-native/Libraries/PushNotificationIOS/RCTPushNotification.xcodeproj"; sourceTree = "<group>"; };
 		9689B35421AC8EC4008BDB65 /* RealRealityApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = RealRealityApp.entitlements; path = RealRealityApp/RealRealityApp.entitlements; sourceTree = "<group>"; };
 		96D8081621A1E4CC00230C9D /* AirMaps.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AirMaps.xcodeproj; path = "../node_modules/react-native-maps/lib/ios/AirMaps.xcodeproj"; sourceTree = "<group>"; };
+		96E5E8BF220F32BD0083A269 /* KCKeepAwake.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = KCKeepAwake.xcodeproj; path = "../node_modules/react-native-keep-awake/ios/KCKeepAwake.xcodeproj"; sourceTree = "<group>"; };
 		995E170AF4C541F6820A7305 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		9B194DDA2FC64AEFBE904DEE /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		A50C671BE14040E7A3AAC0B5 /* TSBackgroundFetch.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = TSBackgroundFetch.framework; path = "../node_modules/react-native-background-fetch/ios/RNBackgroundFetch/TSBackgroundFetch.framework"; sourceTree = SDKROOT; };
@@ -529,6 +538,7 @@
 				961E5A8121972C660091CA32 /* libRCTPushNotification.a in Frameworks */,
 				00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */,
 				00C302E71ABCBA2D00DB3ED1 /* libRCTGeolocation.a in Frameworks */,
+				961FBBAB22301C55001AAF45 /* libKCKeepAwake.a in Frameworks */,
 				00C302E81ABCBA2D00DB3ED1 /* libRCTImage.a in Frameworks */,
 				133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */,
 				00C302E91ABCBA2D00DB3ED1 /* libRCTNetwork.a in Frameworks */,
@@ -752,6 +762,7 @@
 				960C52C321DA05F40024BEEC /* Fonts */,
 				96D8081621A1E4CC00230C9D /* AirMaps.xcodeproj */,
 				961E5A7821972C5B0091CA32 /* RCTPushNotification.xcodeproj */,
+				96E5E8BF220F32BD0083A269 /* KCKeepAwake.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
 				146833FF1AC3E56700842450 /* React.xcodeproj */,
 				00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */,
@@ -914,6 +925,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		96E5E8C0220F32BD0083A269 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				96E5E8C6220F32BD0083A269 /* libKCKeepAwake.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		ADBDB9201DFEBF0600ED6528 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1054,6 +1073,10 @@
 				{
 					ProductGroup = 96D8080B21A1E28A00230C9D /* Products */;
 					ProjectRef = 1E22C7CEC3FB406C9B00662D /* AirMaps.xcodeproj */;
+				},
+				{
+					ProductGroup = 96E5E8C0220F32BD0083A269 /* Products */;
+					ProjectRef = 96E5E8BF220F32BD0083A269 /* KCKeepAwake.xcodeproj */;
 				},
 				{
 					ProductGroup = 961A946C218F85C70087D928 /* Products */;
@@ -1459,6 +1482,13 @@
 			fileType = archive.ar;
 			path = libAirMaps.a;
 			remoteRef = 96D8081A21A1E4CC00230C9D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		96E5E8C6220F32BD0083A269 /* libKCKeepAwake.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libKCKeepAwake.a;
+			remoteRef = 96E5E8C5220F32BD0083A269 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */ = {

@@ -14,6 +14,8 @@ import MapView from 'react-native-maps';
 import Tts from 'react-native-tts';
 import BackgroundGeolocation from 'react-native-background-geolocation';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import KeepAwake from 'react-native-keep-awake';
+
 
 const iconSize=40;
 console.disableYellowBox = true;
@@ -239,77 +241,91 @@ export default class RealReality extends Component {
   }
 
   render(){
-    return(
-       <View style={styles.container} key={this.state.infoPOITitle}>
-         <View style={styles.poiInfoSection} >
-           <Text style={styles.poiTitle}>{this.state.infoPOITitle}</Text>
-           <Text style={styles.poiDistance}>{this.state.infoPOIDistance} km</Text>
-           <Text style={styles.poiText}>{this.state.infoPOIAbstract}</Text>
-         </View>
-         <MapView
-           style={styles.map}
-           region={this.state.region}
-           onRegionChangeComplete={
-             region => {
-               this.setRegionDeltaAfterZoom(region);
+    //if (this.props.screenShouldBeAwake) {
+    if (true) {
+        return(
+         <View style={styles.container} key={this.state.infoPOITitle}>
+           <View style={styles.poiInfoSection} >
+             <Text style={styles.poiTitle}>{this.state.infoPOITitle}</Text>
+             <Text style={styles.poiDistance}>{this.state.infoPOIDistance} km</Text>
+             <Text style={styles.poiText}>{this.state.infoPOIAbstract}</Text>
+           </View>
+           <MapView
+             style={styles.map}
+             region={this.state.region}
+             onRegionChangeComplete={
+               region => {
+                 this.setRegionDeltaAfterZoom(region);
+               }
              }
-           }
-         >
-           {this.state.allPOIs.map(poi => (
-            <MapView.Marker
-              key={poi['label']['value']+poi['lat']['value']}
-              coordinate={{
-                            latitude:parseFloat(poi['lat']['value']),
-                            longitude:parseFloat(poi['long']['value'])
-                        }}
-              title={poi['label']['value']}
-              description={poi['abstract']['value']}
-              onPress={(e) => {
-                e.persist();
-                e.title=poi['label']['value'];
-                e.abstract = poi['abstract']['value'];
-                e.distance = poi['distance']['value'];
-                this.selectedMarker(e);
+           >
+             {this.state.allPOIs.map(poi => (
+              <MapView.Marker
+                key={poi['label']['value']+poi['lat']['value']}
+                coordinate={{
+                              latitude:parseFloat(poi['lat']['value']),
+                              longitude:parseFloat(poi['long']['value'])
+                          }}
+                title={poi['label']['value']}
+                description={poi['abstract']['value']}
+                onPress={(e) => {
+                  e.persist();
+                  e.title=poi['label']['value'];
+                  e.abstract = poi['abstract']['value'];
+                  e.distance = poi['distance']['value'];
+                  this.selectedMarker(e);
+                  }
                 }
-              }
-              style={styles.callout}
-              pinColor={(poi['label']['value']==this.state.activePOI.title)?"#000000":"#46a9fc"}
-            >
-              <MapView.Callout tooltip={true}/>
-            </MapView.Marker>
-           ))}
-           {this.state.userLocation!=null ?
-               <MapView.Marker
-                coordinate={ this.state.userLocation }
-                title = { "Your Location" }
-                pinColor='blue'
-               />:null
-           }
-         </MapView>
-         <View style={styles.actionButtonSection}>
-           <TouchableOpacity
-             style={styles.button}
-             onPress={this.getLocationAndPois.bind(this)}
-             underlayColor='#fff'>
-             <Icon style={styles.buttonIcon} name="retweet" size={iconSize} />
-           </TouchableOpacity>
-           <TouchableOpacity
-             style={styles.button}
-             onPress={this.playTTS.bind(this)}
-             underlayColor='#fff'>
-             <Icon style={styles.buttonIcon} name="play" size={iconSize} />
-           </TouchableOpacity>
-           <TouchableOpacity
-             style={styles.button}
-             onPress={this.stopTTS.bind(this)}
-             underlayColor='#fff'>
-             <Icon style={styles.buttonIcon} name="stop" size={iconSize} />
-           </TouchableOpacity>
+                style={styles.callout}
+                pinColor={(poi['label']['value']==this.state.activePOI.title)?"#000000":"#46a9fc"}
+              >
+                <MapView.Callout tooltip={true}/>
+              </MapView.Marker>
+             ))}
+             {this.state.userLocation!=null ?
+                 <MapView.Marker
+                  coordinate={ this.state.userLocation }
+                  title = { "Your Location" }
+                  pinColor='blue'
+                 />:null
+             }
+           </MapView>
+           <View style={styles.actionButtonSection}>
+             <TouchableOpacity
+               style={styles.button}
+               onPress={this.getLocationAndPois.bind(this)}
+               underlayColor='#fff'>
+               <Icon style={styles.buttonIcon} name="retweet" size={iconSize} />
+             </TouchableOpacity>
+             <TouchableOpacity
+               style={styles.button}
+               onPress={this.playTTS.bind(this)}
+               underlayColor='#fff'>
+               <Icon style={styles.buttonIcon} name="play" size={iconSize} />
+             </TouchableOpacity>
+             <TouchableOpacity
+               style={styles.button}
+               onPress={this.stopTTS.bind(this)}
+               underlayColor='#fff'>
+               <Icon style={styles.buttonIcon} name="stop" size={iconSize} />
+             </TouchableOpacity>
+           </View>
+           <KeepAwake />
          </View>
-       </View>
-    );
+       )
+      }
+
+    else {
+      return (
+        <View>
+          <Text>Screen can sleep</Text>
+        </View>
+      );
+    }
   }
 }
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
