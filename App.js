@@ -242,7 +242,7 @@ export default class RealReality extends Component {
 
   render(){
     //if (this.props.screenShouldBeAwake) {
-    if (true) {
+    //if (true) {
         return(
          <View style={styles.container} key={this.state.infoPOITitle}>
            <View style={styles.poiInfoSection} >
@@ -313,15 +313,7 @@ export default class RealReality extends Component {
            <KeepAwake />
          </View>
        )
-      }
-
-    else {
-      return (
-        <View>
-          <Text>Screen can sleep</Text>
-        </View>
-      );
-    }
+      //}
   }
 }
 
