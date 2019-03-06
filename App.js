@@ -245,11 +245,11 @@ export default class RealReality extends Component {
     //if (true) {
         return(
          <View style={styles.container} key={this.state.infoPOITitle}>
-           <View style={styles.poiInfoSection} >
+           <ScrollView style={styles.poiInfoSection} >
              <Text style={styles.poiTitle}>{this.state.infoPOITitle}</Text>
-             <Text style={styles.poiDistance}>{this.state.infoPOIDistance} km</Text>
+             <Text style={styles.poiDistance}>{this.state.infoPOIDistance} Loading...</Text>
              <Text style={styles.poiText}>{this.state.infoPOIAbstract}</Text>
-           </View>
+           </ScrollView>
            <MapView
              style={styles.map}
              region={this.state.region}
@@ -346,14 +346,15 @@ const styles = StyleSheet.create({
   poiInfoSection: {
     backgroundColor:'white',
     marginTop:10,
-    paddingTop:10,
+    paddingTop:30,
     paddingBottom:5,
     paddingLeft:10,
     paddingRight:10,
     borderRadius:10,
     borderColor:'black',
     borderWidth:0,
-    flex:2,
+    height:200,
+    //flex:1,
     width:"100%",
 
   },
